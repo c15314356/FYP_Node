@@ -4,11 +4,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const cassandra = require('cassandra-driver');
+const PORT = 9000;
 
 const app = express();
 // Connecting to Cassandra DB
 const client = new cassandra.Client({
-    contactPoints: ['localhost'],
+    contactPoints: ['127.0.0.1'],
     keyspace: 'crimes',
 });
 
@@ -20,13 +21,22 @@ app.use(bodyParser.json());
 
 // Required to bypass cross site XMLHTTPRequests
 app.use(function(req, res, next){
-    res.header('Access-Control-Allow-Origin', '*');
+    const origin = req.get('origin');
+	// Allow client
+    res.header('Access-Control-Allow-Origin', origin);
+	// Allow all header requests
     res.header('Access-Control-Allow-Headers', '*');
+	// Allow all methods (POST, GET, PUT, DELETe, ect)
+    res.header('Access-Control-Allow-Methods', '*');
+	// Send identity
+    res.header('Access-Control-Allow-Credentials', 'true');
+	// Go to next
     next();
 });
 
 // Get request
 app.get('/db', (req, res, next) => {
+
     const query = 'select * from general_crimes';
     client.execute(query).then(result => {
         res.json(result.rows);
@@ -40,7 +50,9 @@ app.post('/login', (req, res) => {
     res.send(req.body);
 });
 
+app.all('*', (req, res, next) => {res.status(404).send('Not found');});
+
 // Start server on port 9000
-app.listen(9000, () => {
-    console.log('Now listening on port 9000');
+app.listen(PORT, () => {
+    console.log(`Now listening on port ${PORT}`);
 });
