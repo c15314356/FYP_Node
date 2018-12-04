@@ -13,7 +13,7 @@ const client = new cassandra.Client({
     keyspace: 'crimes',
 });
 
-// Parsing body data from requests
+
 // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
 // for parsing application/json
@@ -26,11 +26,10 @@ app.use(function(req, res, next){
     res.header('Access-Control-Allow-Origin', origin);
 	// Allow all header requests
     res.header('Access-Control-Allow-Headers', '*');
-	// Allow all methods (POST, GET, PUT, DELETe, ect)
+	// Allow all methods (POST, GET, PUT, DELETE, ect)
     res.header('Access-Control-Allow-Methods', '*');
 	// Send identity
     res.header('Access-Control-Allow-Credentials', 'true');
-	// Go to next
     next();
 });
 
