@@ -35,8 +35,8 @@ app.use(function(req, res, next){
 
 // Get request
 app.get('/db', (req, res, next) => {
-
     const query = 'select * from general_crimes';
+    // const query = 'select * from wiltshire_street';
     client.execute(query).then(result => {
         res.json(result.rows);
     });
