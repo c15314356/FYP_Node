@@ -33,15 +33,39 @@ app.use(function(req, res, next){
     next();
 });
 
-// Get request
+// // Get request
+// app.get('/db', (req, res, next) => {
+//     // const query = 'select * from general_crimes';
+//     // const query = 'select * from wiltshire_street';
+//     const query = 'select * from all_regions_one_month';
+//     client.execute(query).then(result => {
+//         res.json(result.rows);
+//     });
+// });
+
 app.get('/db', (req, res, next) => {
-    // const query = 'select * from general_crimes';
-    // const query = 'select * from wiltshire_street';
-    const query = 'select * from all_regions_one_month';
-    client.execute(query).then(result => {
-        res.json(result.rows);
+    // const query = 'select * from all_regions_one_month';
+    const query = 'select * from wiltshire_street';
+    var allData = [];
+    client.stream(query).on('readable', function () {
+        // readable is emitted as soon a row is received and parsed
+        var row;
+        while (row = this.read()) {
+        // process row
+        console.log('NextLine');
+        console.log(row);
+        allData.push(row);
+        }
+    }).on('end', function () {
+    // emitted when all rows have been retrieved and read
+        console.log('allData');
+        console.log(allData);
+        res.json(allData);
     });
 });
+
+
+
 
 // Post request
 app.post('/login', (req, res) => {
