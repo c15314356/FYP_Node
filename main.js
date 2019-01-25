@@ -4,15 +4,23 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const cassandra = require('cassandra-driver');
+const mongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
 const PORT = 9000;
 
 const app = express();
-// Connecting to Cassandra DB
-const client = new cassandra.Client({
+
+// Connection URL for Mongo DB.
+const mongoURL = 'mongodb://localhost:27017';
+ 
+// Mongo Database Name.
+const mongoDBName = 'CrimeExplorerDB';
+
+// Connecting to Cassandra DB.
+const cassandraClient = new cassandra.Client({
     contactPoints: ['127.0.0.1'],
     keyspace: 'crimes',
 });
-
 
 // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -33,39 +41,54 @@ app.use(function(req, res, next){
     next();
 });
 
-// // Get request
+// Get request for Mongo DB
+app.get('/db', (req, res, next) => {
+    // Connecting to Mongo DB
+    mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
+        assert.equal(null, err);
+        console.log('Connected successfully to Mongo DB server');
+    
+        const db = mongoClient.db(mongoDBName);
+
+        db.collection('all_regions_one_month').find({}).toArray(function(err, result) {
+        // db.collection('all_regions_one_month').find({"properties.crime_type": "Vehicle crime"}).toArray(function(err, result) {
+        // db.collection('wiltshire_street').find({}).toArray(function(err, result) {
+            assert.equal(err, null);
+            // console.log(result);
+
+            console.log('Sending result data...')
+            res.json(result);
+
+            mongoClient.close();
+            console.log('Closed connection to Mongo DB.');
+        });
+    });
+});
+
+// Get request for Cassandra DB.
 // app.get('/db', (req, res, next) => {
 //     // const query = 'select * from general_crimes';
-//     // const query = 'select * from wiltshire_street';
-//     const query = 'select * from all_regions_one_month';
-//     client.execute(query).then(result => {
+//     const query = 'select * from wiltshire_street';
+//     // const query = 'select * from all_regions_one_month';
+//     cassandraClient.execute(query).then(result => {
 //         res.json(result.rows);
 //     });
 // });
 
-app.get('/db', (req, res, next) => {
-    // const query = 'select * from all_regions_one_month';
-    const query = 'select * from wiltshire_street';
-    var allData = [];
-    client.stream(query).on('readable', function () {
-        // readable is emitted as soon a row is received and parsed
-        var row;
-        while (row = this.read()) {
-        // process row
-        console.log('NextLine');
-        console.log(row);
-        allData.push(row);
-        }
-    }).on('end', function () {
-    // emitted when all rows have been retrieved and read
-        console.log('allData');
-        console.log(allData);
-        res.json(allData);
-    });
-});
-
-
-
+// Get request using pagination on Cassandra DB.
+// app.get('/db', (req, res, next) => {
+//     // const query = 'select * from all_regions_one_month';
+//     const query = 'select * from wiltshire_street';
+//     var allData = [];
+//     cassandraClient.stream(query).on('readable', function () {
+//         var row;
+//         while (row = this.read()) {
+//         allData.push(row);
+//         }
+//     }).on('end', function () {
+//         res.json(allData);
+//     });
+// });
 
 // Post request
 app.post('/login', (req, res) => {
