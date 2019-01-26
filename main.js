@@ -41,7 +41,7 @@ app.use(function(req, res, next){
     next();
 });
 
-// Get request for Mongo DB
+// Get request for Mongo DB crime data.
 app.get('/db', (req, res, next) => {
     // Connecting to Mongo DB
     mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
@@ -89,6 +89,29 @@ app.get('/db', (req, res, next) => {
 //         res.json(allData);
 //     });
 // });
+
+
+// Get request for regional coordinate data.
+app.get('/regions', (req, res, next) => {
+    // Connecting to Mongo DB
+    mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
+        assert.equal(null, err);
+        console.log('Connected successfully to Mongo DB server');
+
+        const db = mongoClient.db(mongoDBName);
+
+        db.collection("region_coordinates").find({}).toArray(function(err, result) {
+            assert.equal(err, null);
+            // console.log(result);
+
+            console.log('Sending region data...')
+            res.json(result);
+
+            mongoClient.close();
+            console.log('Closed connection to Mongo DB.');
+        });
+    });
+});
 
 // Post request
 app.post('/login', (req, res) => {
