@@ -50,9 +50,9 @@ app.get('/db', (req, res, next) => {
     
         const db = mongoClient.db(mongoDBName);
 
-        db.collection('all_regions_one_month').find({}).toArray(function(err, result) {
+        // db.collection('all_regions_one_month').find({}).toArray(function(err, result) {
         // db.collection('all_regions_one_month').find({"properties.crime_type": "Vehicle crime"}).toArray(function(err, result) {
-        // db.collection('wiltshire_street').find({}).toArray(function(err, result) {
+        db.collection('wiltshire_street').find({}).toArray(function(err, result) {
             assert.equal(err, null);
             // console.log(result);
 
@@ -100,7 +100,7 @@ app.get('/regions', (req, res, next) => {
 
         const db = mongoClient.db(mongoDBName);
 
-        db.collection("region_coordinates").find({}).toArray(function(err, result) {
+        db.collection("region_coordinates10s").find({}).toArray(function(err, result) {
             assert.equal(err, null);
             // console.log(result);
 
