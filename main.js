@@ -47,16 +47,14 @@ app.get('/db', (req, res, next) => {
     mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
         assert.equal(null, err);
         console.log('Connected successfully to Mongo DB server');
-    
+		
         const db = mongoClient.db(mongoDBName);
 
-        // db.collection('all_regions_one_month').find({}).toArray(function(err, result) {
         // db.collection('all_regions_one_month').find({"properties.crime_type": "Vehicle crime"}).toArray(function(err, result) {
-        db.collection('wiltshire_street').find({}).toArray(function(err, result) {
+        db.collection(req.query.region_name).find({'properties.crime_date': req.query.crime_date}).toArray(function(err, result) {
             assert.equal(err, null);
-            // console.log(result);
-
-            console.log('Sending result data...')
+			
+            console.log('Sending crime data...')
             res.json(result);
 
             mongoClient.close();
@@ -100,9 +98,8 @@ app.get('/regions', (req, res, next) => {
 
         const db = mongoClient.db(mongoDBName);
 
-        db.collection("region_coordinates10s").find({}).toArray(function(err, result) {
+        db.collection("region_coordinates").find({}).toArray(function(err, result) {
             assert.equal(err, null);
-            // console.log(result);
 
             console.log('Sending region data...')
             res.json(result);
