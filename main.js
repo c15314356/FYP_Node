@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const cassandra = require('cassandra-driver');
+// const cassandra = require('cassandra-driver');
 const mongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const PORT = 9000;
@@ -17,10 +17,10 @@ const mongoURL = 'mongodb://localhost:27017';
 const mongoDBName = 'CrimeExplorerDB';
 
 // Connecting to Cassandra DB.
-const cassandraClient = new cassandra.Client({
-    contactPoints: ['127.0.0.1'],
-    keyspace: 'crimes',
-});
+// const cassandraClient = new cassandra.Client({
+//     contactPoints: ['127.0.0.1'],
+//     keyspace: 'crimes',
+// });
 
 // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -47,11 +47,8 @@ app.get('/db', (req, res, next) => {
     mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
         assert.equal(null, err);
         console.log('Connected successfully to Mongo DB server');
-		
         const db = mongoClient.db(mongoDBName);
-
-        // db.collection('all_regions_one_month').find({"properties.crime_type": "Vehicle crime"}).toArray(function(err, result) {
-        db.collection(req.query.region_name).find({'properties.crime_date': req.query.crime_date}).toArray(function(err, result) {
+        db.collection(req.query.region_name).find({$or: req.query.crime_dates}).toArray(function(err, result) {
             assert.equal(err, null);
 			
             console.log('Sending crime data...')
@@ -95,26 +92,15 @@ app.get('/regions', (req, res, next) => {
     mongoClient.connect(mongoURL, {useNewUrlParser: true}, function(err, mongoClient) {
         assert.equal(null, err);
         console.log('Connected successfully to Mongo DB server');
-
         const db = mongoClient.db(mongoDBName);
-
         db.collection("region_coordinates").find({}).toArray(function(err, result) {
             assert.equal(err, null);
-
             console.log('Sending region data...')
             res.json(result);
-
             mongoClient.close();
             console.log('Closed connection to Mongo DB.');
         });
     });
-});
-
-// Post request
-app.post('/login', (req, res) => {
-    console.log('Receiving data...');
-    console.log('body is', req.body);
-    res.send(req.body);
 });
 
 app.all('*', (req, res, next) => {res.status(404).send('Not found');});
